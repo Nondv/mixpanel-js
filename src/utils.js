@@ -1,4 +1,6 @@
+/*global MIXPANEL_FAKE_HOST:true*/
 /* eslint camelcase: "off", eqeqeq: "off" */
+
 import Config from './config';
 
 // since es6 imports are static and we run unit tests from the console, window won't be defined when importing this file
@@ -36,6 +38,18 @@ var nativeBind = FuncProto.bind,
     breaker = {};
 
 var _ = {
+    is_fake_host_defined: function() { return 'undefined' !== typeof MIXPANEL_FAKE_HOST; },
+    current_host: function() {
+        return this.is_fake_host_defined() ? MIXPANEL_FAKE_HOST.split('/')[2] : window.location.host;
+    },
+    current_url: function() {
+        var location = window.location;
+        var result = location.href;
+        if (this.is_fake_host_defined()) {
+            result = result.replace(location.protocol + '//' + location.host, MIXPANEL_FAKE_HOST);
+        }
+        return result;
+    },
     trim: function(str) {
         // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/Trim#Polyfill
         return str.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, '');
@@ -1504,7 +1518,7 @@ _.info = {
             '$referring_domain': _.info.referringDomain(document.referrer),
             '$device': _.info.device(userAgent)
         }), {
-            '$current_url': window.location.href,
+            '$current_url': _.current_url(),
             '$browser_version': _.info.browserVersion(userAgent, navigator.vendor, window.opera),
             '$screen_height': screen.height,
             '$screen_width': screen.width,

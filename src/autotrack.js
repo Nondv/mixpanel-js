@@ -116,7 +116,7 @@ var autotrack = {
         return {
             '$event_type': eventType,
             '$ce_version': 1,
-            '$host': window.location.host,
+            '$host': _.current_host(),
             '$pathname': window.location.pathname
         };
     },

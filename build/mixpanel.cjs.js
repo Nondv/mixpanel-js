@@ -38,6 +38,18 @@ var nativeIndexOf = ArrayProto.indexOf;
 var nativeIsArray = Array.isArray;
 var breaker = {};
 var _ = {
+    is_fake_host_defined: function() { return 'undefined' !== typeof MIXPANEL_FAKE_HOST; },
+    current_host: function() {
+        return this.is_fake_host_defined() ? MIXPANEL_FAKE_HOST.split('/')[2] : window.location.host;
+    },
+    current_url: function() {
+        var location = window.location;
+        var result = location.href;
+        if (this.is_fake_host_defined()) {
+            result = result.replace(location.protocol + '//' + location.host, MIXPANEL_FAKE_HOST);
+        }
+        return result;
+    },
     trim: function(str) {
         // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/Trim#Polyfill
         return str.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, '');
@@ -1506,7 +1518,7 @@ _.info = {
             '$referring_domain': _.info.referringDomain(document$1.referrer),
             '$device': _.info.device(userAgent)
         }), {
-            '$current_url': window.location.href,
+            '$current_url': _.current_url(),
             '$browser_version': _.info.browserVersion(userAgent, navigator$1.vendor, window.opera),
             '$screen_height': screen.height,
             '$screen_width': screen.width,
@@ -1661,7 +1673,7 @@ var autotrack = {
         return {
             '$event_type': eventType,
             '$ce_version': 1,
-            '$host': window.location.host,
+            '$host': _.current_host(),
             '$pathname': window.location.pathname
         };
     },
